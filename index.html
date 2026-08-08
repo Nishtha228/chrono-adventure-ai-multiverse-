@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>⚡ Chrono Adventure — AI Multiverse</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <canvas id="gameCanvas"></canvas>
+  <div id="particlesBg"></div>
+
+  <section id="screen-start" class="screen active">
+    <div class="hero-logo">⚡ CHRONO ADVENTURE</div>
+    <div class="subtitle">Choose Your Hero. Enter Your World. Change Time.</div>
+    <div class="menu-grid">
+      <button data-action="play">▶ PLAY</button>
+      <button data-action="customize">🎨 CUSTOMIZE</button>
+      <button data-action="achievements">🏆 ACHIEVEMENTS</button>
+      <button data-action="settings">⚙ SETTINGS</button>
+      <button data-action="howto">❓ HOW TO PLAY</button>
+      <button id="continueBtn" data-action="continue">▶ CONTINUE</button>
+      <button data-action="profile">👤 PROFILE</button>
+      <button data-action="leaderboard">🏆 LEADERBOARD</button>
+      <button data-action="editor">🧱 LEVEL EDITOR</button>
+    </div>
+    <div class="start-tip">Original offline indie game • HTML5 Canvas • Web Audio • LocalStorage</div>
+  </section>
+
+  <section id="screen-heroes" class="screen panel-screen">
+    <h1>CHOOSE YOUR HERO</h1>
+    <div id="heroCards" class="card-grid"></div>
+    <div class="screen-actions"><button data-action="back">← BACK</button><button data-action="worlds">CONTINUE →</button></div>
+  </section>
+
+  <section id="screen-worlds" class="screen panel-screen">
+    <h1>CHOOSE YOUR WORLD</h1>
+    <div id="worldCards" class="card-grid"></div>
+    <div id="selectedWorldText" class="selected-line"></div>
+    <div class="screen-actions"><button data-action="backHero">← HERO</button><button data-action="startLevel">START →</button></div>
+  </section>
+
+  <section id="screen-loading" class="screen">
+    <div class="loading-portal"></div>
+    <h1>⚡ CHRONO ADVENTURE</h1>
+    <h2 id="loadingText">🌍 Loading...</h2>
+    <div class="progress"><i id="loadProgress"></i></div>
+    <p id="loadingTip"></p>
+  </section>
+
+  <section id="screen-intro" class="screen modal-screen">
+    <div class="modal">
+      <div class="eyebrow">WORLD / LEVEL</div>
+      <h1 id="introWorld"></h1><h2 id="introLevel"></h2>
+      <p id="introObjective"></p>
+      <button data-action="skipIntro">SKIP CINEMATIC</button>
+    </div>
+  </section>
+
+  <section id="screen-tutorial" class="screen modal-screen">
+    <div class="modal tutorial">
+      <div class="eyebrow">FIRST-TIME TUTORIAL</div>
+      <h1 id="tutorialTitle">MOVEMENT</h1>
+      <p id="tutorialText"></p>
+      <div id="tutorialAction" class="tutorial-action"></div>
+      <div class="tutorial-buttons"><button data-action="tutorialNext">NEXT →</button><button data-action="skipTutorial">SKIP TUTORIAL</button></div>
+      <div class="tutorial-progress"><i id="tutorialProgress"></i></div>
+    </div>
+  </section>
+
+  <section id="screen-results" class="screen modal-screen">
+    <div class="modal result">
+      <h1>🎉 LEVEL COMPLETE!</h1>
+      <div id="resultStats"></div>
+      <div class="result-actions">
+        <button data-action="replay">🔄 REPLAY LEVEL</button>
+        <button data-action="nextLevel">NEXT LEVEL →</button>
+        <button data-action="menu">🏠 MAIN MENU</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-gameover" class="screen modal-screen">
+    <div class="modal danger">
+      <h1>💀 GAME OVER</h1>
+      <p id="gameOverReason"></p>
+      <div class="result-actions">
+        <button data-action="retry">🔄 TRY AGAIN</button>
+        <button data-action="restartCheckpoint">💾 RESTART CHECKPOINT</button>
+        <button data-action="menu">🏠 MAIN MENU</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-victory" class="screen modal-screen">
+    <div class="modal victory">
+      <h1>🌌 MULTIVERSE SAVED</h1>
+      <h2>Chrono Adventure Complete!</h2>
+      <div id="victoryStats"></div>
+      <div class="result-actions">
+        <button data-action="playAgain">PLAY AGAIN</button>
+        <button data-action="achievements">VIEW ACHIEVEMENTS</button>
+        <button data-action="menu">MAIN MENU</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="pauseOverlay" class="overlay hidden">
+    <div class="modal">
+      <h1>⏸️ GAME PAUSED</h1>
+      <div class="result-actions">
+        <button data-action="resume">▶ RESUME</button>
+        <button data-action="restartCheckpoint">🔄 RESTART CHECKPOINT</button>
+        <button data-action="settings">⚙ SETTINGS</button>
+        <button data-action="menu">🏠 QUIT TO MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <aside id="settingsPanel" class="side-panel hidden">
+    <h2>⚙ SETTINGS</h2>
+    <label>Sound <input id="setSound" type="checkbox" checked></label>
+    <label>Music <input id="setMusic" type="checkbox" checked></label>
+    <label>Particles <input id="setParticles" type="checkbox" checked></label>
+    <label>Screen Shake <input id="setShake" type="checkbox" checked></label>
+    <label>AI Voice <input id="setVoice" type="checkbox"></label>
+    <label>High Contrast <input id="setContrast" type="checkbox"></label>
+    <label>Reduced Motion <input id="setReduced" type="checkbox"></label>
+    <label>Large UI <input id="setLarge" type="checkbox"></label>
+    <label>Difficulty <select id="setDifficulty"><option>EASY</option><option>NORMAL</option><option>HARD</option></select></label>
+    <label>AI Text Size <input id="setAiSize" type="range" min="12" max="24" value="15"></label>
+    <button data-action="fullscreen">⛶ FULLSCREEN</button>
+    <button data-action="closeSettings">CLOSE</button>
+  </aside>
+
+  <aside id="infoPanel" class="side-panel hidden"></aside>
+
+  <div id="hud" class="hidden">
+    <div id="topHud" class="hud-row"></div>
+    <div id="worldBanner"></div>
+    <div id="aiPanel"><b>🤖 CHRONO AI — LIVE</b><div id="aiText"></div></div>
+    <div id="objectivePanel"><b>OBJECTIVES</b><div id="objectives"></div></div>
+    <div id="challengePanel" class="challenge-panel"><b>🎯 CHRONO CHALLENGE</b><div id="challengeText">Loading challenge...</div></div>
+    <div id="eventBanner" class="event-banner hidden"></div>
+    <div id="abilityPanel"></div>
+    <div id="minimapWrap"><canvas id="minimap" width="180" height="100"></canvas><span>👻 BEST RUN</span></div>
+    <div id="controls" class="controls">
+      <span>◀ LEFT — A</span><span>▶ RIGHT — D</span><span>⬆ JUMP — SPACE</span><span>⚡ DASH — SHIFT</span>
+      <span>⏪ REWIND — Q</span><span>🪝 HOOK — E</span><span>🔥 ELEMENT — F</span><span>🌀 PORTAL — P</span><span>ESC PAUSE • M MAP • T MEME</span><button class="meme-hud-btn" data-action="meme">😂 MEME</button>
+    </div>
+    <div id="touchControls" class="touch-controls">
+      <button data-touch="left">◀<small>LEFT</small></button><button data-touch="right">▶<small>RIGHT</small></button>
+      <button data-touch="jump">⬆<small>JUMP</small></button><button data-touch="dash">⚡<small>DASH</small></button>
+      <button data-touch="rewind">⏪<small>REWIND</small></button><button data-touch="ability">🪝<small>ABILITY</small></button>
+      <button data-touch="element">🔥<small>ELEMENT</small></button><button data-touch="portal">🌀<small>PORTAL</small></button>
+    </div>
+    <div id="toast"></div>
+  </div>
+
+  <section id="memePanel" class="overlay hidden meme-overlay">
+    <div class="meme-card">
+      <div class="meme-glow"></div>
+      <div class="meme-badge" id="memeTag">MULTIVERSE MOMENT</div>
+      <h1 id="memeTitle">😂 CHRONO MEME MOMENT</h1>
+      <div id="memeHeroVisual" class="meme-visual">🧒 ⚔️ 👹</div>
+      <div id="memeLines" class="meme-lines"></div>
+      <div class="meme-actions">
+        <button data-meme="random">🎲 NEW MEME</button>
+        <button data-meme="enemy">👹 ENEMY MEME</button>
+        <button data-meme="battle">⚔️ BATTLE MEME</button>
+        <button data-meme="copy">📋 COPY</button>
+        <button data-meme="close">✕ CLOSE</button>
+      </div>
+      <small>Original in-game meme generator • no external images/assets</small>
+    </div>
+  </section>
+
+  <div id="editorPanel" class="screen panel-screen hidden">
+    <h1>🧱 LEVEL EDITOR</h1>
+    <div class="editor-tools">
+      <button data-edit="platform">ADD PLATFORM</button><button data-edit="coin">ADD COIN</button><button data-edit="enemy">ADD ENEMY</button>
+      <button data-edit="spike">ADD SPIKE</button><button data-edit="power">ADD POWER-UP</button><button data-edit="checkpoint">ADD CHECKPOINT</button><button data-edit="finish">ADD FINISH</button>
+    </div>
+    <canvas id="editorCanvas" width="1000" height="500"></canvas>
+    <div class="screen-actions">
+      <button data-action="saveEditor">SAVE LEVEL</button><button data-action="loadEditor">LOAD LEVEL</button><button data-action="clearEditor">CLEAR</button>
+      <button data-action="exportEditor">EXPORT JSON</button><button data-action="importEditor">IMPORT JSON</button><button data-action="menu">🏠 MENU</button>
+    </div>
+  </div>
+</div>
+<script src="audio.js"></script>
+<script src="particles.js"></script>
+<script src="characters.js"></script>
+<script src="worlds.js"></script>
+<script src="levels.js"></script>
+<script src="ai.js"></script>
+<script src="editor.js"></script>
+<script src="memes.js"></script>
+<script src="game.js"></script>
+</body>
+</html>

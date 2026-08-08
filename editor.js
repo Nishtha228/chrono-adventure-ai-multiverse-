@@ -1,0 +1,10 @@
+const Editor=(()=>{let items=[],tool="platform",canvas,ctx;
+function init(){canvas=document.getElementById("editorCanvas");if(!canvas)return;ctx=canvas.getContext("2d");canvas.addEventListener("pointerdown",e=>{const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)*canvas.width/r.width,y=(e.clientY-r.top)*canvas.height/r.height;items.push({type:tool,x,y,w:tool==="platform"?120:20,h:tool==="platform"?18:20});draw()});document.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>tool=b.dataset.edit);draw()}
+function draw(){if(!ctx)return;ctx.fillStyle="#0a0d18";ctx.fillRect(0,0,canvas.width,canvas.height);ctx.strokeStyle="#ffffff18";for(let x=0;x<1000;x+=50){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,500);ctx.stroke()}for(let y=0;y<500;y+=50){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(1000,y);ctx.stroke()}for(const a of items){ctx.fillStyle={platform:"#7ac",coin:"#ffd34d",enemy:"#f55",spike:"#aaa",power:"#d75cff",checkpoint:"#5f5",finish:"#fff"}[a.type]||"#f8f";if(a.type==="coin")ctx.beginPath(),ctx.arc(a.x,a.y,9,0,7),ctx.fill();else ctx.fillRect(a.x,a.y,a.w,a.h)}}
+function save(){localStorage.setItem("chrono_editor",JSON.stringify(items));toast("💾 LEVEL SAVED")}
+function load(){try{items=JSON.parse(localStorage.getItem("chrono_editor")||"[]")}catch{items=[]}draw()}
+function clear(){items=[];draw()}
+function exp(){const blob=new Blob([JSON.stringify(items,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="chrono-level.json";a.click()}
+function imp(){const i=document.createElement("input");i.type="file";i.accept=".json";i.onchange=()=>{const f=i.files[0],r=new FileReader();r.onload=()=>{try{items=JSON.parse(r.result);draw()}catch{toast("Invalid JSON")}};r.readAsText(f)};i.click()}
+function toast(t){const e=document.getElementById("toast");if(e){e.textContent=t;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),1000)}}
+return{init,save,load,clear,exp,imp}})();

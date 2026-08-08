@@ -1,0 +1,46 @@
+{
+  "missing_files": [],
+  "js_syntax": {
+    "game.js": [
+      0,
+      ""
+    ],
+    "audio.js": [
+      0,
+      ""
+    ],
+    "ai.js": [
+      0,
+      ""
+    ],
+    "characters.js": [
+      0,
+      ""
+    ],
+    "worlds.js": [
+      0,
+      ""
+    ],
+    "levels.js": [
+      0,
+      ""
+    ],
+    "particles.js": [
+      0,
+      ""
+    ],
+    "editor.js": [
+      0,
+      ""
+    ],
+    "memes.js": [
+      0,
+      ""
+    ]
+  },
+  "theme_worlds": true,
+  "theme_mechanics": true,
+  "ai_upgrade": true,
+  "challenge_ui": true,
+  "event_ui": true
+}
