@@ -68,20 +68,91 @@ if(pressed("q"))rewind();if(pressed("f"))switchElement();if(pressed("e"))activat
 // PLAYER MOVEMENT
 // ==============================
 
-let left =
+// ==============================
+// PLAYER MOVEMENT - FIXED
+// ==============================
+
+const left =
     actionDown("a") ||
     actionDown("arrowleft");
 
-let right =
+const right =
     actionDown("d") ||
     actionDown("arrowright");
 
-let jump =
+const jump =
     pressed(" ") ||
     pressed("arrowup");
 
-let dash =
+const dash =
     pressed("shift");
+
+const MOVE_SPEED = 6;
+
+// Horizontal movement
+if (left && !right) {
+    p.vx = -MOVE_SPEED;
+}
+else if (right && !left) {
+    p.vx = MOVE_SPEED;
+}
+else {
+    p.vx = 0;
+}
+
+// Jump
+if (jump && p.onGround) {
+    p.vy = -10;
+    p.onGround = false;
+
+    AudioFX.sfx("jump");
+    particles.emit(p.x, p.y + 20, 8, "#fff", 2);
+
+    tutorialEvent("jump");
+}
+
+// Dash
+if (dash && p.energy >= 15) {
+    p.energy -= 15;
+
+    if (right) {
+        p.vx = 12;
+    }
+    else if (left) {
+        p.vx = -12;
+    }
+    else {
+        p.vx = p.vx >= 0 ? 12 : -12;
+    }
+
+    particles.emit(p.x, p.y, 18, "#65eaff", 4);
+    AudioFX.sfx("dash");
+    shake = 5;
+
+    tutorialEvent("dash");
+}
+
+if (left || right) {
+    tutorialEvent("move");
+}
+
+// Gravity
+let gravity =
+    p.element === "GRAVITY"
+        ? -0.38
+        : 0.5;
+
+if (p.element === "GRAVITY" && p.y < 80) {
+    gravity = 0.5;
+}
+
+if (!p.onGround) {
+    p.vy += gravity * dt;
+}
+
+// Move player
+p.x += p.vx * dt;
+p.y += p.vy * dt;
 
 const MOVE_SPEED = 6;
 const ACCELERATION = 0.8;
@@ -228,15 +299,17 @@ function drawWorld(){
  ctx.restore();
 }
 function drawLevel(){ctx.save();if(settings.shake&&shake>0)ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);drawWorld();// Smooth camera follow
-const targetCamX = Math.max(
-    0,
-    Math.min(
-        level.width - innerWidth,
-        p.x - innerWidth * 0.45
-    )
-);
+const targetCamera =
+    Math.max(
+        0,
+        Math.min(
+            level.width - innerWidth,
+            p.x - innerWidth * 0.4
+        )
+    );
 
-cam.x += (targetCamX - cam.x) * 0.12;
+cam.x = targetCamera;
+cam.y = 0;
 ctx.save();ctx.translate(-cam.x,0);
 for(const pl of level.platforms){
  let col=pl.slide?"#f59b53":pl.bounce?"#ff78bb":pl.flowerJump?"#67b65f":pl.energyPlatform?"#32dfff":pl.ropeBridge?"#8b5b3c":world.platform;
