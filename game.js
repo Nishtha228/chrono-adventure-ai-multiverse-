@@ -64,13 +64,63 @@ function portal(){p.portalMode=!p.portalMode;AudioFX.sfx("portal");if(!p.portalM
 function update(dt){if(state!=="game"||paused)return;dt=Math.min(dt,2);save.playTime+=dt/60;
 if(p.abilityCD>0)p.abilityCD-=dt;if(p.invuln>0)p.invuln-=dt;if(p.freeze>0)p.freeze-=dt;if(p.shield>0)p.shield-=dt;
 if(pressed("q"))rewind();if(pressed("f"))switchElement();if(pressed("e"))activateAbility();if(pressed("p")){if(p.portalMode){portal()}else portal()}
-let left=actionDown("a")||actionDown("arrowleft"),right=actionDown("d")||actionDown("arrowright"),jump=pressed(" ")||pressed("arrowup"),dash=pressed("shift");
+// ==============================
+// PLAYER MOVEMENT
+// ==============================
+
+let left =
+    actionDown("a") ||
+    actionDown("arrowleft");
+
+let right =
+    actionDown("d") ||
+    actionDown("arrowright");
+
+let jump =
+    pressed(" ") ||
+    pressed("arrowup");
+
+let dash =
+    pressed("shift");
+
+const MOVE_SPEED = 4.5;
+const ACCELERATION = 0.65;
+const FRICTION = 0.78;
+
+// LEFT
+if (left && !right) {
+    p.vx -= ACCELERATION * dt;
+}
+
+// RIGHT
+else if (right && !left) {
+    p.vx += ACCELERATION * dt;
+}
+
+// NO MOVEMENT KEY = STOP
+else {
+    p.vx *= Math.pow(FRICTION, dt);
+
+    // prevent tiny automatic movement
+    if (Math.abs(p.vx) < 0.05) {
+        p.vx = 0;
+    }
+}
+
+// Maximum normal running speed
+if (p.vx > MOVE_SPEED) {
+    p.vx = MOVE_SPEED;
+}
+
+if (p.vx < -MOVE_SPEED) {
+    p.vx = -MOVE_SPEED;
+}
 if(left)p.vx-=.5*dt;if(right)p.vx+=.5*dt;if(!left&&!right)p.vx*=Math.pow(.82,dt);if(Math.abs(p.vx)>6)p.vx=Math.sign(p.vx)*6;
 if(jump&&p.onGround){p.vy=-10;p.onGround=false;AudioFX.sfx("jump");particles.emit(p.x,p.y+20,8,"#fff",2);tutorialEvent("jump")}
 if(dash&&p.energy>=15){p.energy-=15;p.vx=Math.sign(p.vx||1)*12;particles.emit(p.x,p.y,18,"#65eaff",4);AudioFX.sfx("dash");shake=5;tutorialEvent("dash")}
 if((left||right))tutorialEvent("move");
 let gravity=p.element==="GRAVITY"?-.38:.5;if(p.element==="GRAVITY"&&p.y<80)gravity=.5;
-if(!p.onGround)p.vy+=gravity*dt;if(hero.id==="runner")p.vx*=1.01;
+if(!p.onGround)p.vy+=gravity*dt;
 if(world.id==="town"&&p.slide){p.vx=8;p.vy=3;p.slide-=dt} if(world.id==="sky")p.vx+=Math.sin(performance.now()*.001+p.y*.01)*.035*dt; if(world.id==="ninja")p.vx+=Math.sin(performance.now()*.001)*.015*dt; if(world.id==="neon"&&p.freeze>0){p.vx*=.98}
 p.x+=p.vx*dt;p.y+=p.vy*dt;p.onGround=false;
 for(const pl of level.platforms){if(p.x+p.w/2>pl.x&&p.x-p.w/2<pl.x+pl.w&&p.y+p.h/2>=pl.y&&p.y+p.h/2<=pl.y+pl.h+Math.abs(p.vy*dt)+2&&p.vy>=0){p.y=pl.y-p.h/2;p.vy=0;p.onGround=true;if(pl.slide){p.slide=80;toast("🛝 SLIDE BOOST");particles.emit(p.x,p.y+20,8,"#ffd34d")} if(pl.bounce){p.vy=-14;p.onGround=false;toast("🌸 FLOWER BOUNCE!");particles.burst(p.x,p.y,"#ff8bd8",14)} if(pl.flowerJump){p.vy=-15;p.onGround=false;toast("🌸 ENCHANTED FLOWER JUMP!");particles.burst(p.x,p.y,"#ff9bd7",18)} } }
