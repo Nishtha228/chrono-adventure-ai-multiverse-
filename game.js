@@ -83,8 +83,8 @@ let jump =
 let dash =
     pressed("shift");
 
-const MOVE_SPEED = 4.5;
-const ACCELERATION = 0.65;
+const MOVE_SPEED = 6;
+const ACCELERATION = 0.8;
 const FRICTION = 0.78;
 
 // LEFT
@@ -227,7 +227,16 @@ function drawWorld(){
  }
  ctx.restore();
 }
-function drawLevel(){ctx.save();if(settings.shake&&shake>0)ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);drawWorld();cam.x=Math.max(0,Math.min(level.width-innerWidth,p.x-innerWidth*.35));cam.y=0;
+function drawLevel(){ctx.save();if(settings.shake&&shake>0)ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);drawWorld();// Smooth camera follow
+const targetCamX = Math.max(
+    0,
+    Math.min(
+        level.width - innerWidth,
+        p.x - innerWidth * 0.45
+    )
+);
+
+cam.x += (targetCamX - cam.x) * 0.12;
 ctx.save();ctx.translate(-cam.x,0);
 for(const pl of level.platforms){
  let col=pl.slide?"#f59b53":pl.bounce?"#ff78bb":pl.flowerJump?"#67b65f":pl.energyPlatform?"#32dfff":pl.ropeBridge?"#8b5b3c":world.platform;
